@@ -124,6 +124,39 @@ app.get('/youtube/commentsbyask/:channelId', async (req, res) => {
   }
 });
 
+app.get('/yt/getAll/:channelId', async (req, res) => {
+	
+	try {
+    const videoIds = await getAllVideosFromChannel(channelId);
+
+    const commentsPromises = videoIds.map(async (videoId) => {
+      const commentsResponse = await youtube.commentThreads.list({
+        part: 'snippet',
+        videoId: videoId,
+        maxResults: 1000000, // Maximum number of comments to retrieve per request
+      });
+
+      return commentsResponse.data.items
+        .map((item) => {
+          return {
+            videoId: videoId,
+            author: item.snippet.topLevelComment.snippet.authorDisplayName,
+            text: item.snippet.topLevelComment.snippet.textOriginal,
+			time: item.snippet.topLevelComment.snippet.publishedAt
+          };
+        });
+    });
+
+    const comments = await Promise.all(commentsPromises).then((result) => result.flat());
+
+    res.json({ comments });
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    
+    res.status(500).json({ error: 'Failed to fetch comments' });
+  }
+  
+});
 
 // Start the server
 const port = 3000; // Replace with your desired port number
