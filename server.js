@@ -125,7 +125,7 @@ app.get('/youtube/commentsbyask/:channelId', async (req, res) => {
 });
 
 app.get('/yt/getAll/:channelId', async (req, res) => {
-	
+	const channelId = req.params.channelId;
 	try {
     const videoIds = await getAllVideosFromChannel(channelId);
 
