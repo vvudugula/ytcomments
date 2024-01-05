@@ -4,6 +4,12 @@ const cors = require('cors');
 const app = express();
 app.use(cors());
 
+app.use(cors({
+  origin: 'http://localhost:4200', // Allow requests from this origin
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true // Include cookies in the requests if needed
+}));
+
 // YouTube API setup
 const youtube = google.youtube({
   version: 'v3',
