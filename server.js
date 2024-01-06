@@ -161,11 +161,6 @@ app.get('/yt/getAll/:channelId', async (req, res) => {
 app.get('/yt/search-channels/:search', async (req, res) => {
   const query = req.query.search || ''; // Get the search query from request query params
 
-  const youtube = google.youtube({
-    version: 'v3',
-    auth: API_KEY
-  });
-
   try {
     const response = await youtube.search.list({
       part: 'snippet',
