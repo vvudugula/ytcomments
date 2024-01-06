@@ -80,7 +80,7 @@ async function getAllVideosFromChannel(channelId) {
     const response = await youtube.search.list({
       part: 'snippet',
       channelId: channelId,
-      maxResults: 50, // Maximum number of results per page (adjust as needed)
+      maxResults: 1000000, // Maximum number of results per page (adjust as needed)
       type: 'video',
     });
 
@@ -132,7 +132,7 @@ app.get('/yt/getAll/:channelId', async (req, res) => {
 	const channelId = req.params.channelId;
 	try {
     const videoIds = await getAllVideosFromChannel(channelId);
-
+    console.log(videoIds);
     const commentsPromises = videoIds.map(async (videoId) => {
       const commentsResponse = await youtube.commentThreads.list({
         part: 'snippet',
@@ -146,7 +146,7 @@ app.get('/yt/getAll/:channelId', async (req, res) => {
             videoId: videoId,
             author: item.snippet.topLevelComment.snippet.authorDisplayName,
             text: item.snippet.topLevelComment.snippet.textOriginal,
-			time: item.snippet.topLevelComment.snippet.publishedAt
+	    time: item.snippet.topLevelComment.snippet.publishedAt
           };
         });
     });
