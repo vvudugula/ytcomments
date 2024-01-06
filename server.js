@@ -158,6 +158,35 @@ app.get('/yt/getAll/:channelId', async (req, res) => {
   
 });
 
+app.get('/api/search-channels', async (req, res) => {
+  const query = req.query.q || ''; // Get the search query from request query params
+
+  const youtube = google.youtube({
+    version: 'v3',
+    auth: API_KEY
+  });
+
+  try {
+    const response = await youtube.search.list({
+      part: 'snippet',
+      type: 'channel',
+      q: query,
+      maxResults: 10 // Adjust the number of results as needed
+    });
+
+    const channels = response.data.items.map(item => ({
+      channelId: item.snippet.channelId,
+      channelTitle: item.snippet.channelTitle
+    }));
+
+    res.json(channels);
+  } catch (error) {
+    console.error('Error fetching channels:', error);
+    res.status(500).json({ error: 'Failed to fetch channels' });
+  }
+});
+
+
 // Start the server
 const port = 3000; // Replace with your desired port number
 app.listen(port, () => {
