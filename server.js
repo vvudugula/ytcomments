@@ -8,8 +8,17 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+const allowedOrigins = [
+  'http://localhost:4200', // Add your allowed origins here
+  'https://www.subupnow.com',
+   'https://subupnow.com',
+  'https://github.com',
+	'https://www.github.com',
+  // Add more origins as needed
+];
+
 app.use(cors({
-  origin: 'http://localhost:4200', // Allow requests from this origin
+  origin: allowedOrigins, // Allow requests from this origin
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true // Include cookies in the requests if needed
 }));
