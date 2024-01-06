@@ -1,8 +1,12 @@
 const express = require('express');
 const { google } = require('googleapis');
+
 const cors = require('cors');
+const bodyParser = require('body-parser');
+
 const app = express();
 app.use(cors());
+app.use(bodyParser.json());
 
 app.use(cors({
   origin: 'http://localhost:4200', // Allow requests from this origin
@@ -159,25 +163,89 @@ app.get('/yt/getAll/:channelId', async (req, res) => {
 });
 
 app.get('/yt/search-channels/:search', async (req, res) => {
-  const query = req.query.search || ''; // Get the search query from request query params
+  const query = req.params.search || ''; // Get the search query from request query params
 
+	console.log(query);
   try {
-    const response = await youtube.search.list({
-      part: 'snippet',
-      type: 'channel',
-      q: query,
-      maxResults: 10 // Adjust the number of results as needed
+    const response = await youtube.channels.list({
+      part: 'snippet,contentDetails,statistics',
+      forUsername: query,
     });
+	console.log(response);
 
     const channels = response.data.items.map(item => ({
-      channelId: item.snippet.channelId,
-      channelTitle: item.snippet.channelTitle
+      channelId: item.id,
+      channelTitle: item.snippet.title
     }));
 
     res.json(channels);
   } catch (error) {
     console.error('Error fetching channels:', error);
     res.status(500).json({ error: 'Failed to fetch channels' });
+  }
+});
+
+
+// API endpoint to get channel details from YouTube video URL
+
+// Function to extract video ID from YouTube URL
+
+function extractVideoId(url) {
+  const regExp = /[?&]v=([^#&?]+)/;
+  const match = url.match(regExp);
+  return match && match[1] ? match[1] : null;
+}
+
+
+// Function to get video details using YouTube Data API
+async function getVideoDetails(videoId) {
+	
+	const response = await youtube.videos.list({
+      part: 'snippet,contentDetails,statistics',
+      id: videoId,
+    });
+	console.log(response);
+	
+  return response.data.items[0];
+}
+
+// Function to get channel details using YouTube Data API
+async function getChannelDetails(channelId) {
+  const response = await youtube.channels.list({
+      part: 'snippet,contentDetails,statistics',
+      id: channelId,
+    });
+	console.log(response);
+	
+  return response.data.items[0].snippet;
+}
+
+
+app.post('/yt/getChannelDetails', async (req, res) => {
+  const { url } = req.body;
+	
+  // Extract video ID from the URL
+  const videoId = extractVideoId(url);
+
+  if (videoId) {
+    try {
+      // Fetch video details from YouTube Data API
+      const videoDetails = await getVideoDetails(videoId);
+
+      if (videoDetails && videoDetails.snippet && videoDetails.snippet.channelId) {
+        const channelId = videoDetails.snippet.channelId;
+        
+        // Fetch channel details using the channel ID
+        const channelDetails = await getChannelDetails(channelId);
+        res.json({ channel_details: channelDetails, channel_id:	channelId });
+      } else {
+        res.status(404).json({ error: 'Channel details not found' });
+      }
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch channel details' });
+    }
+  } else {
+    res.status(400).json({ error: 'Invalid YouTube URL' });
   }
 });
 
