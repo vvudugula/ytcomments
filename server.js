@@ -25,6 +25,7 @@ app.use(cors({
 
 const apiKeys = [
   'AIzaSyAEsRWAHfTFAyBzR3OYp_sC4g5m4mzQccs', // bgm
+  'AIzaSyDtTuXT3MnONVXjordVgBgu_qCls4I_MDk', // bgm 2
   'AIzaSyA88MzVLgQ0XFAdlf7HpL3P85MuQavJrQQ', // like
   // Add more keys as needed
 ];
