@@ -49,7 +49,7 @@ function apikeyCheck(error) {
         console.log('403 Error: Switching to the next API key.');
         currentApiKeyIndex++;
         initializeYouTubeClient(apiKeys[currentApiKeyIndex]);
-        return performYouTubeRequest(requestOptions);
+    
       } else {
         console.error('All API keys exhausted. 403 error still persists.');
       }
