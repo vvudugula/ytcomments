@@ -23,12 +23,38 @@ app.use(cors({
   credentials: true // Include cookies in the requests if needed
 }));
 
-// YouTube API setup
-const youtube = google.youtube({
-  version: 'v3',
-  auth: 'AIzaSyAEsRWAHfTFAyBzR3OYp_sC4g5m4mzQccs', // Replace with your API key
-});
+const apiKeys = [
+  'AIzaSyAEsRWAHfTFAyBzR3OYp_sC4g5m4mzQccs', // bgm
+  'AIzaSyA88MzVLgQ0XFAdlf7HpL3P85MuQavJrQQ', // like
+  // Add more keys as needed
+];
+let currentApiKeyIndex = 0;
+let youtube;
 
+function initializeYouTubeClient(apiKey) {
+  youtube = google.youtube({
+    version: 'v3',
+    auth: apiKey,
+  });
+}
+
+initializeYouTubeClient(apiKeys[currentApiKeyIndex]);
+
+// YouTube API setup
+
+function apikeyCheck(error) {
+	if (error.response && error.response.status === 403) {
+      // If a 403 error occurs, switch to the next API key if available
+      if (currentApiKeyIndex < apiKeys.length - 1) {
+        console.log('403 Error: Switching to the next API key.');
+        currentApiKeyIndex++;
+        initializeYouTubeClient(apiKeys[currentApiKeyIndex]);
+        return performYouTubeRequest(requestOptions);
+      } else {
+        console.error('All API keys exhausted. 403 error still persists.');
+      }
+	}
+}
 app.get('/youtube/videos/:channelId', async (req, res) => {
   const channelId = req.params.channelId;
 
@@ -78,6 +104,7 @@ app.get('/youtube/comments/:videoId', async (req, res) => {
 
     res.json({ comments });
   } catch (error) {
+	 apikeyCheck(error);
     console.error('Error fetching comments:', error);
     res.status(500).json({ error: 'Failed to fetch comments' });
   }
@@ -95,6 +122,7 @@ async function getAllVideosFromChannel(channelId) {
 
     return response.data.items.map((item) => item.id.videoId);
   } catch (error) {
+	  apikeyCheck(error);
     console.error('Error fetching videos:', error);
     return [];
   }
@@ -132,7 +160,7 @@ app.get('/youtube/commentsbyask/:channelId', async (req, res) => {
     res.json({ comments });
   } catch (error) {
     console.error('Error fetching comments:', error);
-    
+    apikeyCheck(error);
     res.status(500).json({ error: 'Failed to fetch comments' });
   }
 });
@@ -165,7 +193,7 @@ app.get('/yt/getAll/:channelId', async (req, res) => {
     res.json({ comments });
   } catch (error) {
     console.error('Error fetching comments:', error);
-    
+    apikeyCheck(error);
     res.status(500).json({ error: 'Failed to fetch comments' });
   }
   
@@ -190,6 +218,7 @@ app.get('/yt/search-channels/:search', async (req, res) => {
     res.json(channels);
   } catch (error) {
     console.error('Error fetching channels:', error);
+	apikeyCheck(error);
     res.status(500).json({ error: 'Failed to fetch channels' });
   }
 });
@@ -256,6 +285,7 @@ app.post('/yt/getChannelDetails', async (req, res) => {
         res.status(404).json({ error: 'Channel details not found' });
       }
     } catch (error) {
+		apikeyCheck(error);
       res.status(500).json({ error: 'Failed to fetch channel details' });
     }
   } else {
