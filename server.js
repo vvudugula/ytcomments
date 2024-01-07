@@ -294,6 +294,21 @@ app.post('/yt/getChannelDetails', async (req, res) => {
   }
 });
 
+app.post('/yt/comments/contact-us', async (req, res) => {
+  const { name, email, message } = req.body;
+
+  try {
+    // Create a Nodemailer transporter
+    console.log("Name :"+name);
+	  console.log("Email :"+email);
+	  console.log("Message :"+message);
+    res.status(200).send('Email sent successfully');
+  } catch (error) {
+    console.error('Error sending email:', error);
+    res.status(500).send('Failed to send email');
+  }
+});
+
 
 // Start the server
 const port = 3000; // Replace with your desired port number
