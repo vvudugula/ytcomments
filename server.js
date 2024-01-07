@@ -200,9 +200,14 @@ app.get('/yt/search-channels/:search', async (req, res) => {
 // Function to extract video ID from YouTube URL
 
 function extractVideoId(url) {
-  const regExp = /[?&]v=([^#&?]+)/;
+  const regExp = /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([^"&?\/\n\s]{11})/;
   const match = url.match(regExp);
-  return match && match[1] ? match[1] : null;
+
+  if (match && match[1]) {
+    return match[1];
+  } else {
+    return null; // Invalid or unrecognized URL format
+  }
 }
 
 
